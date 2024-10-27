@@ -14,7 +14,7 @@ class Router
 {
 
     /**
-     * @throws ReflectionException
+     * __construct function
      */
     public function __construct()
     {
@@ -30,38 +30,29 @@ class Router
                 foreach ($methodAttributes as $attr) {
                     $args = $attr->getArguments();
                     $route_path = $args[0];
-
                     $route_pattern = $this->getRoutePattern($route_path);
-
-                    //dd($route_pattern);
-
                     if (preg_match($route_pattern, $request_uri, $matches)) {
-
-                        echo "Matched! ID: " . $matches['id'];
-                    } else {
-                       continue;
+                        $variables = $this->getVariableFromMatches($matches);
+                        if ($request_method == $args[1]) {
+                            //$route = $attr->newInstance();
+                            $controller = new $class();
+                            $controller->{$method->getName()}(...$variables);
+                            return;
+                        }
                     }
-
-
-                    dd($matches);
-
-                    if ($matched and $request_method == $args[1]) {
-                        $route = $attr->newInstance();
-                        $controller = new $class();
-                        $controller->{$method->getName()}();
-                        return;
-                    }
+                    continue;
                 }
-
-
-                abort(404, 'not found');
             }
-        }
 
+            abort(404, 'not found');
+        }
     }
 
     /**
-     * @throws ReflectionException
+     * getClassesWithAttribute function
+     *
+     * @param array $classes
+     * @return array
      */
     private function getClassesWithAttribute(array $classes): array
     {
@@ -75,6 +66,11 @@ class Router
         return $result;
     }
 
+    /**
+     * getAllControllerClasses function
+     *
+     * @return array
+     */
     private function getAllControllerClasses(): array
     {
 
@@ -96,13 +92,13 @@ class Router
         }
         $classes = $this->getClassesWithAttribute($classes);
         return $classes;
-
     }
 
     /**
+     * getPublicMethods function
+     *
      * @param mixed $class
-     * @return ReflectionMethod[]
-     * @throws ReflectionException
+     * @return array
      */
     public function getPublicMethods(mixed $class): array
     {
@@ -120,4 +116,20 @@ class Router
         return '#^' . $pattern . '$#';
     }
 
+    /**
+     * getVariableFromMatches function
+     *
+     * @param array $matches
+     * @return array
+     */
+    private function getVariableFromMatches(array $matches): array
+    {
+        $result = [];
+        foreach ($matches as $key => $val) {
+            if (!is_numeric($key)) {
+                $result[$key] = $val;
+            }
+        }
+        return $result;
+    }
 }

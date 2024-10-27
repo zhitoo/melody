@@ -1,15 +1,17 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Http\Route;
 
 #[Controller]
 class ExampleController
 {
 
-    #[Route('/api/v1/example/{id?}/{hello?}', 'GET')]
-    public  function  index()
+    #[Route('/api/v1/example/{id}/{name}', 'GET')]
+    public  function  index(int $id, string $name)
     {
-        echo "Hello World!";
+        echo "$id: Hello $name";
     }
 
     #[Route('/', 'GET')]
@@ -17,5 +19,4 @@ class ExampleController
     {
         echo "Hello Welcome To Home!!!!";
     }
-
 }
